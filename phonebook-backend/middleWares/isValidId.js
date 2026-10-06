@@ -1,9 +1,11 @@
-const { isValidObjectId } = require('mongoose');
 const { HttpError } = require('../helpers');
+
+const uuidRegexp =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const isValidId = (req, res, next) => {
   const { id } = req.params;
-  if (!isValidObjectId(id)) {
+  if (!uuidRegexp.test(id)) {
     next(HttpError(404, `${id} is not valid id`));
     return;
   }

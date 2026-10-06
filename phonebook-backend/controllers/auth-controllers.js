@@ -9,20 +9,24 @@ const { SECRET_KEY } = process.env;
 
 const register = async (req, res) => {
   const { name, email, password } = req.body;
-  const user = await User.findOne({ email });
+  const user = await User.findByEmail(email);
 
   if (user) {
     throw HttpError(409, 'Email in use');
   }
 
   const hashPassword = await bcrypt.hash(password, 10);
-  const newUser = await User.create({ name, email, password: hashPassword });
+  const newUser = await User.create({
+    name,
+    email,
+    password: hashPassword,
+  });
 
   const payload = {
-    id: newUser._id,
+    id: newUser.id,
   };
   const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '23h' });
-  await User.findByIdAndUpdate(newUser._id, { token });
+  await User.setToken(newUser.id, token);
 
   res.status(201).json({
     token,
@@ -35,7 +39,7 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   const { email, password } = req.body;
-  const user = await User.findOne({ email });
+  const user = await User.findByEmail(email);
 
   if (!user) {
     throw HttpError(401, 'Email or password is wrong');
@@ -47,10 +51,10 @@ const login = async (req, res) => {
   }
 
   const payload = {
-    id: user._id,
+    id: user.id,
   };
   const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '23h' });
-  await User.findByIdAndUpdate(user._id, { token });
+  await User.setToken(user.id, token);
 
   res.json({
     token,
@@ -62,8 +66,8 @@ const login = async (req, res) => {
 };
 
 const logout = async (req, res) => {
-  const { _id } = req.user;
-  await User.findByIdAndUpdate(_id, { token: null });
+  const { id } = req.user;
+  await User.setToken(id, null);
 
   res.status(204).end();
 };

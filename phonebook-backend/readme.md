@@ -1,14 +1,14 @@
 # Phonebook Backend
 
 REST API бэкенд для React-приложения [Phonebook](https://github.com/KostyaYY/Phonebook).
-Написан по аналогии с проектом `node-js-project` (Express + MongoDB/Mongoose + JWT),
+Express + PostgreSQL (Supabase) + JWT,
 но повторяет контракт API `https://connections-api.herokuapp.com`, на который изначально
 завязан фронтенд Phonebook.
 
 ## Стек
 
 - Express
-- MongoDB / Mongoose
+- PostgreSQL в Supabase (драйвер `pg`)
 - JWT (jsonwebtoken) + bcrypt
 - Joi (валидация тела запроса)
 - cors, morgan, dotenv
@@ -18,12 +18,13 @@ REST API бэкенд для React-приложения [Phonebook](https://gith
 ```bash
 npm install
 cp .env-examples .env
+npm run db:init   # создаёт таблицы users и contacts (можно запускать повторно)
 ```
 
 Заполните `.env`:
 
 ```
-DB_HOST=<connection string MongoDB>
+DATABASE_URL=<connection string Supabase: Connect → Session pooler>
 PORT=3000
 SECRET_KEY=<любая секретная строка для подписи JWT>
 ```
@@ -79,7 +80,11 @@ axios.defaults.baseURL = 'http://localhost:3000';
 
 ```
 app.js                       # express app, middlewares, роуты, обработка ошибок
-server.js                    # подключение к MongoDB и запуск сервера
+server.js                    # проверка подключения к БД и запуск сервера
+db/
+  index.js                   # пул подключений pg
+  schema.sql                 # схема таблиц
+  init.js                    # npm run db:init
 controllers/
   auth-controllers.js        # signup/login/logout/current
   contacts-controllers.js    # CRUD контактов
@@ -88,14 +93,13 @@ decorators/
   ctrlWrapper.js             # обёртка для async-контроллеров
   validateBody.js            # валидация тела запроса через Joi
 middleWares/
-  isValidId.js                # проверка валидности MongoDB ObjectId
+  isValidId.js                # проверка, что id — UUID
 models/
-  user.js                     # схема User + Joi-схемы
-  contact.js                   # схема Contact + Joi-схемы
+  user.js                     # запросы к users + Joi-схемы
+  contact.js                   # запросы к contacts + Joi-схемы
 routes/api/
   users.js
   contacts.js
 helpers/
   HttpError.js
-  handleMongooseError.js
 ```

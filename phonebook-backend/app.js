@@ -22,6 +22,11 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
+  // Postgres unique_violation, e.g. two simultaneous signups with one email
+  if (err.code === '23505') {
+    res.status(409).json({ message: 'Email in use' });
+    return;
+  }
   const { status = 500, message = 'Server Error' } = err;
   res.status(status).json({ message });
 });

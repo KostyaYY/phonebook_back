@@ -2,7 +2,7 @@
   "name": "phonebook-backend",
   "version": "0.0.0",
   "private": true,
-  "description": "REST API backend for the Phonebook React app (analogous to connections-api)",
+  "description": "REST API backend for the Phonebook React app (Express + Supabase Postgres)",
   "engines": {
     "node": ">=14.20.1"
   },
@@ -10,7 +10,8 @@
     "start": "cross-env NODE_ENV=production node ./server.js",
     "start:dev": "cross-env NODE_ENV=development nodemon ./server.js",
     "lint": "eslint **/*.js",
-    "lint:fix": "eslint --fix **/*.js"
+    "lint:fix": "eslint --fix **/*.js",
+    "db:init": "node ./db/init.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.0",
@@ -20,8 +21,8 @@
     "express": "4.17.1",
     "joi": "^17.9.2",
     "jsonwebtoken": "^9.0.0",
-    "mongoose": "^7.1.1",
-    "morgan": "1.10.0"
+    "morgan": "1.10.0",
+    "pg": "^8.23.1"
   },
   "devDependencies": {
     "eslint": "7.19.0",

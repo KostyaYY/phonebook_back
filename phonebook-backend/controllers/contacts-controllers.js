@@ -3,21 +3,19 @@ const { HttpError } = require('../helpers');
 const { ctrlWrapper } = require('../decorators');
 
 const getAllContacts = async (req, res) => {
-  const { _id: owner } = req.user;
+  const { id: owner } = req.user;
   const page = Number(req.query.page) || 1;
-  const limit = Number(req.query.limit) || 0;
-  const skip = (page - 1) * limit;
-  const result = await Contact.find({ owner }, '-createdAt -updatedAt', {
-    skip,
-    limit,
-  });
+  // no limit by default: the frontend expects the whole list
+  const limit = Number(req.query.limit) || null;
+  const offset = limit ? (page - 1) * limit : 0;
+  const result = await Contact.findAll(owner, { limit, offset });
   res.json(result);
 };
 
 const getContactById = async (req, res) => {
-  const { _id: owner } = req.user;
+  const { id: owner } = req.user;
   const { id } = req.params;
-  const result = await Contact.findOne({ _id: id, owner });
+  const result = await Contact.findOne(id, owner);
   if (!result) {
     throw HttpError(404, `Contact with id ${id} not found`);
   }
@@ -25,17 +23,15 @@ const getContactById = async (req, res) => {
 };
 
 const addContact = async (req, res) => {
-  const { _id: owner } = req.user;
-  const result = await Contact.create({ ...req.body, owner });
+  const { id: owner } = req.user;
+  const result = await Contact.create(req.body, owner);
   res.status(201).json(result);
 };
 
 const updateContact = async (req, res) => {
-  const { _id: owner } = req.user;
+  const { id: owner } = req.user;
   const { id } = req.params;
-  const result = await Contact.findOneAndUpdate({ _id: id, owner }, req.body, {
-    new: true,
-  });
+  const result = await Contact.update(id, owner, req.body);
   if (!result) {
     throw HttpError(404, `Contact with id ${id} not found`);
   }
@@ -43,9 +39,9 @@ const updateContact = async (req, res) => {
 };
 
 const deleteContact = async (req, res) => {
-  const { _id: owner } = req.user;
+  const { id: owner } = req.user;
   const { id } = req.params;
-  const result = await Contact.findOneAndDelete({ _id: id, owner });
+  const result = await Contact.remove(id, owner);
   if (!result) {
     throw HttpError(404, `Contact with id ${id} not found`);
   }
