@@ -18,7 +18,17 @@ const contactSchema = new Schema(
       required: true,
     },
   },
-  { versionKey: false, timestamps: true }
+  {
+    versionKey: false,
+    timestamps: true,
+    toJSON: {
+      virtuals: true,
+      transform: (_, ret) => {
+        delete ret._id;
+        return ret;
+      },
+    },
+  }
 );
 
 contactSchema.post('save', handleMongooseError);
